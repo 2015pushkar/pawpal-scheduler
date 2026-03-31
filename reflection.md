@@ -27,6 +27,10 @@ classDiagram
         +str name
         +int available_minutes_per_day
         +list preferences
+        +list pets
+        +add_pet(pet) None
+        +remove_pet(name) None
+        +get_all_tasks() list
         +get_available_time() int
         +update_preferences(prefs) None
     }
@@ -36,6 +40,10 @@ classDiagram
         +str species
         +int age
         +list special_needs
+        +list tasks
+        +add_task(task) None
+        +remove_task(title) None
+        +get_tasks() list
         +get_info() str
     }
 
@@ -45,6 +53,11 @@ classDiagram
         +str priority
         +str frequency
         +str category
+        +str time_of_day
+        +date due_date
+        +bool completed
+        +str reason_skipped
+        +mark_complete() None
         +is_valid() bool
         +to_dict() dict
     }
@@ -52,7 +65,6 @@ classDiagram
     class Schedule {
         +list tasks
         +list skipped_tasks
-        +int total_duration
         +add_task(task) None
         +get_total_duration() int
         +get_summary() str
@@ -60,18 +72,19 @@ classDiagram
 
     class Scheduler {
         +Owner owner
-        +Pet pet
-        +list tasks
-        +add_task(task) None
-        +remove_task(title) None
+        +get_all_tasks() list
+        +sort_by_time(tasks) list
+        +filter_by_pet(tasks, name) list
+        +filter_by_status(tasks, completed) list
+        +mark_task_complete(task, pet) Task
+        +detect_conflicts(schedule) list
         +generate_schedule() Schedule
         +explain_plan(schedule) str
     }
 
-    Owner "1" --> "1" Pet : owns
+    Owner "1" --> "*" Pet : manages
+    Pet  "1" --> "*" Task : owns
     Scheduler "1" --> "1" Owner : uses
-    Scheduler "1" --> "1" Pet : uses
-    Scheduler "1" --> "*" Task : manages
     Scheduler ..> Schedule : produces
     Schedule "*" --> "*" Task : contains
 ```
@@ -120,16 +133,34 @@ This is a deliberate tradeoff for simplicity and performance. A duration-aware c
 
 **a. How you used AI**
 
-I used AI for multiple purposes:
-- **Design brainstorming**: I asked for feedback on my initial class structure and whether it made sense to separate `Schedule` and `Scheduler`
-- **Debugging**: When the generated schedule violated time constraints, AI helped me trace through the logic and identify that I needed to sort tasks by priority before fitting them
-- **Refactoring**: AI suggested ways to reduce code duplication when checking for task conflicts
+I used AI tools (Claude Code via VS Code extension) across every phase of the project:
 
-Most helpful were specific, concrete prompts: instead of "help me design this," I asked "does this class structure make sense for X scenario" with examples. Broad questions generated too many options.
+- **Phase 1 — Design**: Used AI to review my initial UML and flag missing relationships. It identified five concrete problems (priority string sort bug, `total_duration` drift, missing `reason_skipped`, unvalidated `add_task`, and a broken `Owner → Pet` arrow that wasn't in code). This was more valuable than brainstorming from scratch because the AI was reacting to *my* design rather than generating a generic one.
+- **Phase 2 — Implementation**: Asked AI to implement method stubs one class at a time, then reviewed each before moving on. For `generate_schedule`, I asked it to explain the sort key choice before accepting the code.
+- **Phase 3 — Testing**: Used AI to generate a test suite based on the class design, then added edge cases myself (cross-pet conflict, `as-needed` recurrence returning `None`, empty owner).
+- **Phase 4 — UI**: Directed AI to wire `Scheduler` methods into Streamlit, specifying exactly which component to use for conflicts (`st.warning`) vs. errors (`st.error`).
+
+Most effective prompt pattern: give the AI a concrete question with a specific file as context — *"based on `pawpal_system.py`, what edge cases should I test for `sort_by_time`?"* — rather than open-ended requests.
 
 **b. Judgment and verification**
 
-AI suggested using a greedy algorithm to fit tasks (sort by priority, fit highest priority first). I initially dismissed this as "too simple," but then realized it actually matched the problem well: for a busy pet owner, fitting the most important tasks first *is* the right approach. I verified this by testing it against several scenarios (owner with 1 hour vs 3 hours free, different task sets) and confirming it always honored time constraints and maximized important task coverage. I almost over-engineered this, so the simple solution was actually the right one.
+The most important rejection: AI initially suggested storing `total_duration` as a running attribute on `Schedule` (updating it inside `add_task`). I flagged this as a sync risk — if any code ever called `schedule.tasks.append()` directly instead of `schedule.add_task()`, the count would silently go stale. I replaced it with a computed `get_total_duration()` using `sum()`. The AI accepted the correction and the tests confirmed the computed approach stayed accurate across all scenarios.
+
+A second modification: for conflict detection, AI first generated a nested `for` loop (O(n²)). I pointed out the dict approach was both simpler to read and O(n), and asked it to rewrite. The dict version is 6 lines vs 10, and the docstring now explicitly explains *why* the dict approach was chosen — so the decision is visible to anyone reading the code later.
+
+**c. Which Copilot/AI features were most effective**
+
+- **Inline code generation with file context** (`#file:pawpal_system.py`): Produced code that matched the existing class signatures rather than inventing new ones.
+- **Chat for design review**: Asking "what relationships are missing or misleading in this UML?" surfaced issues I had not noticed.
+- **Generating test stubs then filling edge cases manually**: AI-generated happy-path tests quickly; I added the edge cases (empty schedule, cross-pet conflict, `as-needed` returning `None`) myself, which are the tests most likely to catch real bugs.
+
+**d. Staying organized across phases**
+
+Using separate prompts per phase (design → stubs → logic → tests → UI) prevented context contamination. When I asked about testing, I did not include the Streamlit UI context — it kept the AI focused on the logic layer. When I moved to the UI, I gave it only `app.py` and `pawpal_system.py`. This mirrors how a real team would divide responsibilities: the backend engineer and the UI engineer don't need to know everything about each other's code.
+
+**e. Being the "lead architect"**
+
+The key lesson: AI is a fast, tireless junior developer — it will write whatever you describe, including the wrong thing. The human role is to hold the design vision, catch architectural mistakes (like the sort key bug that would have silently produced wrong schedules), and decide which suggestions to accept, modify, or reject. The AI saved significant time on boilerplate and test scaffolding. The decisions that made the system correct — separating `Scheduler` from `Schedule`, routing all task retrieval through `Owner.get_all_tasks()`, choosing O(n) conflict detection — were made by the human. AI accelerated execution; the architect directed it.
 
 ---
 
@@ -137,25 +168,26 @@ AI suggested using a greedy algorithm to fit tasks (sort by priority, fit highes
 
 **a. What you tested**
 
-I tested:
-- **Time constraint enforcement**: Does the schedule never exceed available time? (Tested with 30, 60, 120-minute windows and various task combinations)
-- **Priority ordering**: Are high-priority tasks always scheduled before low-priority ones when there's a choice?
-- **Edge case—no available time**: If owner has 0 minutes free, does the system gracefully return an empty schedule?
-- **Edge case—one task exceeds time**: If a single task is longer than available time, is it still recommended (with a warning)?
+The final test suite has 24 tests across 6 classes:
 
-These were important because the scheduler's core job is respecting time and priority. If these basic behaviors fail, the whole system is unreliable for a busy pet owner who depends on it.
+- **Task completion** (2 tests): `mark_complete()` sets the flag; calling it twice doesn't break anything.
+- **Task validation** (4 tests): Adding tasks increases count; zero-duration and invalid-priority tasks raise `ValueError`.
+- **Sort correctness** (4 tests): Chronological order, untimed tasks fall to end, empty list returns `[]`, all-untimed preserves count.
+- **Recurrence logic** (5 tests): Daily creates next task due tomorrow; weekly due in 7 days; `as-needed` returns `None` and adds nothing; `completed` flag is set regardless of frequency.
+- **Conflict detection** (5 tests): Duplicate time flagged; distinct times clear; cross-pet conflict caught; untimed tasks never conflict; empty schedule is safe.
+- **Schedule generation edge cases** (4 tests): Never exceeds budget; pet with no tasks → empty schedule; owner with no pets → empty schedule; high priority beats low when time is tight.
+
+These tests matter because the scheduler's correctness is invisible to the user — if priority sorting silently breaks, the schedule looks valid but recommends the wrong tasks.
 
 **b. Confidence**
 
-I'm moderately confident for typical use cases (1–3 pets, reasonable task list, clear priorities). The core logic is straightforward and well-tested.
+High confidence for the core behaviors tested. The greedy algorithm, recurrence logic, and conflict detection all have both happy-path and edge-case coverage.
 
-If I had more time, I'd test:
-- **Recurring task conflicts**: Two high-priority tasks that can't fit on the same day—how should the system handle multi-day planning?
-- **Task dependencies**: Some tasks might need to happen in a specific order (e.g., groom before bath). My current design doesn't capture this.
-- **Time-of-day constraints**: Some tasks (walks) might need to happen at specific times, not just any time during the day.
-- **Seasonal variations**: Pet needs might change (more water in summer, more shelter in winter).
-
-These would make the scheduler more realistic but also more complex.
+Remaining gaps:
+- **Duration-aware overlap**: Two tasks at `"08:00"` (30 min) and `"08:15"` would not be flagged — the current check only catches exact time matches.
+- **Multi-day planning**: Recurring tasks create a new instance but there is no weekly calendar view.
+- **Task ordering dependencies**: The system doesn't enforce "walk before grooming."
+- **Large task pools**: Not stress-tested with 50+ tasks; the greedy algorithm is O(n log n) so it should be fine, but it hasn't been verified.
 
 ---
 
@@ -163,16 +195,15 @@ These would make the scheduler more realistic but also more complex.
 
 **a. What went well**
 
-I'm most satisfied with the separation of concerns in my architecture. By decoupling the data models (`Owner`, `Pet`, `Task`) from the scheduling logic (`Scheduler`), I made the code testable and maintainable. I could test the scheduler independently without needing a full Streamlit UI, and I can easily swap out scheduling algorithms in the future. The system also clearly communicates tradeoffs to the user—it shows what fits and what doesn't, rather than silently dropping tasks.
+The strict layering — `Task`/`Pet`/`Owner` as data models, `Scheduler` as the only place with algorithm logic, `Schedule` as a plain output object — paid off throughout. Every new feature (sorting, recurrence, conflict detection) was added to `Scheduler` without touching the data model or the UI. The 24 tests run in 0.03 seconds because none of them touch Streamlit. That separation made it possible to test, debug, and extend the system in isolation at each layer.
 
 **b. What you would improve**
 
-If I had another iteration, I would:
-1. **Add task dependencies and time windows**: Allow tasks to specify "this must happen before 9 AM" or "this must happen after the morning walk."
-2. **Implement multi-day scheduling**: Instead of one daily plan, generate a weekly plan that accounts for non-daily tasks and recurring commitments.
-3. **Add explanations to the UI**: Currently, the scheduler produces a schedule, but the user doesn't see *why* certain tasks were chosen. I'd add a reasoning engine to explain the logic.
-4. **Support task variations**: Let users mark tasks as flexible (e.g., "walk can be 15 or 30 minutes depending on time") to make the schedule more adaptive.
+1. **Duration-aware conflict detection**: Replace exact time-match with a start/end interval overlap check. This requires converting `HH:MM` to minutes-since-midnight and comparing `[start, start + duration)` intervals.
+2. **Weekly calendar view**: Generate a 7-day plan showing which tasks are scheduled on which days, respecting `frequency`.
+3. **Task ordering constraints**: A simple dependency list (`{"Grooming": ["Walk"]}` = groom must follow walk) would make the schedule more realistic.
+4. **Persistent storage**: Right now all data lives in `st.session_state` and is lost on page refresh. Adding JSON or SQLite persistence would make the app genuinely usable.
 
 **c. Key takeaway**
 
-The most important thing I learned is that *constraints clarify design*. Early on, I wanted to support all possible scheduling scenarios (dependencies, time windows, etc.). But by focusing on the busy pet owner's real constraint—"I have X minutes, which tasks *must* I do?"—I designed a much simpler, more usable system. Constraints aren't limitations to work around; they're tools for making better decisions. Also, AI is great for brainstorming and debugging, but you need to stay in the driver's seat—question suggestions, test them, and don't let AI convince you to over-engineer.
+The most important thing I learned is that *the human's job when working with AI is to think in systems, not lines of code*. AI can fill in the lines instantly. What it cannot do is decide that `Owner` should be the retrieval gateway for all tasks, or that `Scheduler` should never directly touch `Pet`, or that a priority sort key must be an integer mapping rather than a string comparison. Those decisions required understanding the whole system — the data flow, the test surface, the future extensibility. Holding that systems view, and directing the AI to implement it accurately, is the actual skill the project developed.
