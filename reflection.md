@@ -108,6 +108,12 @@ I prioritized time constraints first (never exceed available time), then task pr
 
 The scheduler prioritizes high-priority tasks even if it means some lower-priority enrichment activities get dropped. For example, if feeding and medication take up 90% of available time, a walk might not fit in the schedule. This tradeoff is reasonable because pet health and basic care are more critical than optional activities, and a busy owner needs to know what *must* get done versus what might be nice to do. The system still shows this explicitly, so the owner can decide to adjust constraints or task duration if they want more enrichment.
 
+**Conflict detection tradeoff — exact time match vs. duration-aware overlap:**
+
+The current `detect_conflicts()` method flags two tasks only when they share the exact same `time_of_day` string (e.g., both at `"07:30"`). It does *not* detect overlap between tasks whose durations cross into each other's start time — for example, a 30-minute task starting at `"08:00"` and a task starting at `"08:15"` would not be flagged, even though they physically overlap.
+
+This is a deliberate tradeoff for simplicity and performance. A duration-aware check would require sorting tasks by start time and then comparing each task's end time (`start + duration`) against the next task's start time. That approach is more accurate but adds complexity and assumes all times are in the same day and that durations are reliable estimates. For a first implementation serving a single pet owner planning rough daily tasks, exact-match detection is fast (O(n) dict lookup vs O(n log n) sort + comparison), easy to understand, and catches the most obvious errors — two tasks explicitly assigned the same slot. The limitation is documented so it can be upgraded in a future iteration.
+
 ---
 
 ## 3. AI Collaboration
