@@ -78,7 +78,17 @@ classDiagram
 
 **b. Design changes**
 
-Yes, the design evolved during implementation. Initially, I planned to have the `Schedule` class manage both task storage and scheduling logic. However, I separated these concerns by creating a dedicated `Scheduler` class that handles the algorithm, while `Schedule` now simply represents the output (an ordered list of tasks for a given day). This separation made the code easier to test and refactor, as I could modify the scheduling algorithm independently of how schedules are stored and displayed.
+After reviewing the initial design, several issues were identified and addressed:
+
+1. **Removed the `Owner → Pet` ownership arrow from the UML.** The diagram showed `Owner "1" --> "1" Pet : owns`, but neither class held a reference to the other in code — `Scheduler` received them as separate constructor arguments. Rather than force an artificial link onto `Owner`, the arrow was removed to keep the diagram honest. The `Scheduler` is the natural place that pairs an owner with their pet.
+
+2. **Dropped the stored `total_duration` attribute on `Schedule`.** The original design kept `total_duration: int = 0` as a stored field alongside a `get_total_duration()` method. These two could drift out of sync if `add_task` was ever called directly. The fix is to compute the total on-the-fly inside `get_total_duration()` using `sum(t.duration_minutes for t in self.tasks)` and remove the redundant stored value.
+
+3. **Added a priority sort key to fix silent ordering bug.** `generate_schedule` planned to sort tasks by the `priority` string (`"high"`, `"medium"`, `"low"`). Alphabetical string sorting produces `high < low < medium`, which is completely wrong and would silently generate bad schedules. An explicit mapping `{"high": 0, "medium": 1, "low": 2}` is needed as the sort key.
+
+4. **Added a `reason_skipped` field to `Task`.** `explain_plan` needs to communicate *why* a task was dropped (ran out of time, invalid, low priority overflow). Without a place to record this per-task, the explanation logic would require rebuilding that reasoning from scratch after the schedule was already generated. Adding `reason_skipped: str = ""` to `Task` lets `generate_schedule` annotate tasks as it works.
+
+5. **`add_task` should validate before appending.** The initial stub accepted any `Task` object without calling `is_valid()`. An invalid task (e.g., zero-duration) would silently enter the pool and corrupt the schedule. A guard at the top of `add_task` keeps the pool clean.
 
 ---
 
