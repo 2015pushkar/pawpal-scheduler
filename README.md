@@ -6,7 +6,7 @@
 
 ## 📸 Demo
 
-![PawPal+ screenshot](screenshot.png)
+<a href="Screenshot.png" target="_blank"><img src='Screenshot.png' alt='PawPal+ screenshot' style='max-width: 100%;'></a>
 
 ---
 
