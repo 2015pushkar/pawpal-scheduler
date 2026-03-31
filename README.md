@@ -6,8 +6,7 @@
 
 ## 📸 Demo
 
-> _Add a screenshot of your running Streamlit app here._
-> Replace this line with: `![PawPal+ screenshot](screenshot.png)`
+![PawPal+ screenshot](screenshot.png)
 
 ---
 
