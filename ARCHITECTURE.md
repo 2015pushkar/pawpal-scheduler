@@ -46,6 +46,19 @@ That means the system behaves more like an operational assistant than an open-en
 
 ## Detailed Architecture
 
+### PNG Overview
+
+![PawPal+ system architecture](docs/images/pawpal-system-architecture.png)
+
+This PNG is the fastest way to understand the product boundary:
+
+- the AI layer handles symptom interpretation and grounded guidance
+- the scheduler remains the final deterministic execution layer
+
+### Source Diagram
+
+The Mermaid source below mirrors the same structure and stays in the repo as editable text.
+
 ```mermaid
 flowchart TD
     subgraph Interfaces["Interfaces"]
@@ -120,6 +133,29 @@ flowchart TD
     SUGGEST --> TASK
     TASK --> PET
 ```
+
+## UML Views
+
+### Scheduling Domain UML
+
+![PawPal+ scheduling domain UML](docs/images/pawpal-uml-class-diagram.png)
+
+This diagram covers the rule-based side of the system:
+
+- `Owner`, `Pet`, `Task`, `Schedule`, and `Scheduler`
+- task ownership and schedule production
+- the shared execution model used by both manual and AI-generated work
+
+### Care-Helper UML
+
+![PawPal+ care-helper UML](docs/images/pawpal-care-helper-uml-diagram.png)
+
+This diagram covers the bounded AI side:
+
+- local symptom examples and classification
+- local knowledge documents and retrieval
+- `AdviceResult` and `TaskSuggestion` as structured outputs
+- conversion back into the domain `Task` model before scheduling
 
 ## Symptom-To-Schedule Flow
 
@@ -210,3 +246,11 @@ For an engineer, the code separates concerns cleanly:
 - UI orchestration stays in `app.py`
 
 That separation makes the system easy to inspect, extend, and test.
+
+## Regenerating The PNG Assets
+
+If the model or diagrams change, regenerate the PNG visuals with:
+
+```bash
+.venv\Scripts\python scripts/generate_docs_assets.py
+```

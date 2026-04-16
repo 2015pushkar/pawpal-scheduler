@@ -41,17 +41,34 @@ The scheduler then treats those follow-up actions as normal tasks and merges the
 
 ## Architecture At A Glance
 
-```text
-manual pet tasks ------------------------------+
-                                               |
-symptom text -> classify -> retrieve guidance -> grounded advice -> suggested tasks -> Task
-                                               |                                        |
-                                               +----------------------------------------+
-                                                                                        |
-owner + pets + tasks -------------------------------------------------> Scheduler -> daily plan
-```
+![PawPal+ system architecture](docs/images/pawpal-system-architecture.png)
 
-For the detailed architecture diagrams and design framing, see [ARCHITECTURE.md](ARCHITECTURE.md).
+For the detailed architecture diagrams, UML views, and design framing, see [ARCHITECTURE.md](ARCHITECTURE.md).
+
+## UML View
+
+The project has two main class boundaries:
+
+- the deterministic scheduling domain
+- the bounded care-helper layer
+
+![PawPal+ scheduling UML](docs/images/pawpal-uml-class-diagram.png)
+
+## Product Screens
+
+The UI shows the grounded guidance first, then lets the user convert that guidance into executable tasks and a daily schedule.
+
+### Care Guidance
+
+![Care guidance screen](docs/images/care-guidance-screen.png)
+
+### Suggested Tasks And Schedule
+
+![Suggested tasks and schedule screen](docs/images/suggested-tasks-and-schedule-screen.png)
+
+### Schedule Monitoring
+
+![Schedule screen](docs/images/schedule-screen.png)
 
 ## What It Does
 
@@ -149,6 +166,14 @@ Run all tests with:
 ```text
 app.py
 ARCHITECTURE.md
+docs/
+  images/
+    care-guidance-screen.png
+    pawpal-care-helper-uml-diagram.png
+    pawpal-system-architecture.png
+    pawpal-uml-class-diagram.png
+    schedule-screen.png
+    suggested-tasks-and-schedule-screen.png
 data/
   pet_health_symptoms_dataset.csv
 evaluate_care_helper.py
@@ -158,6 +183,8 @@ main.py
 pawpal_ai.py
 pawpal_system.py
 requirements.txt
+scripts/
+  generate_docs_assets.py
 tests/
   test_pawpal.py
   test_pawpal_ai.py
