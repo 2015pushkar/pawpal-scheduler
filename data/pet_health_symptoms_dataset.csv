@@ -1,0 +1,37 @@
+text,condition,record_type
+"My cat vomited 5 times in the past few hours.",Digestive Issues,Owner Observation
+"My cat vomited, then had diarrhea, now just hiding.",Digestive Issues,Owner Observation
+"My puppy seems to get an upset stomach from car rides.",Digestive Issues,Owner Observation
+"My dog has developed sudden, severe abdominal distension.",Digestive Issues,Owner Observation
+"Cat vomits immediately after drinking water.",Digestive Issues,Owner Observation
+"Barium study performed to evaluate motility and rule out partial obstruction.",Digestive Issues,Clinical Notes
+"Rule out extra-GI causes of vomiting (renal condition, pancreatitis, DKA).",Digestive Issues,Clinical Notes
+"Provide critical care feeding, fluids, and pro-motility support as directed by the veterinary team.",Digestive Issues,Clinical Notes
+"My ferret scratches at his ears until they bleed.",Ear Infections,Owner Observation
+"Cat seems painful when she opens her mouth wide to yawn.",Ear Infections,Owner Observation
+"The ear canal seems narrowed and swollen shut.",Ear Infections,Owner Observation
+"Dog's ear hematoma was drained but filled right back up.",Ear Infections,Owner Observation
+"My cat's hearing seems diminished.",Ear Infections,Owner Observation
+"Advise owner to monitor for worsening signs such as increased pain or neurological deficits.",Ear Infections,Clinical Notes
+"Rule out endocrinopathy contributing to chronic skin and ear issues.",Ear Infections,Clinical Notes
+"My dog has crusty ear edges and is losing hair there, very itchy.",Parasites,Owner Observation
+"Puppy has redness and irritation in his skin folds.",Skin Irritations,Owner Observation
+"Cat has scaly patches on her ear tips.",Skin Irritations,Owner Observation
+"The dog's armpits are dark, thickened, and itchy.",Skin Irritations,Owner Observation
+"My dog has thickened skin folds around his muzzle that smell bad.",Skin Irritations,Owner Observation
+"My cat has inflamed nail beds.",Skin Irritations,Owner Observation
+"Fine needle aspirate performed on skin nodule; cytology pending.",Skin Irritations,Clinical Notes
+"Poor coat quality and excessive scaling noted; evaluate diet and endocrine causes.",Skin Irritations,Clinical Notes
+"Found a long, flat, white worm in my dog's fresh stool.",Parasites,Owner Observation
+"My dog has developed bald patches on his face and legs.",Parasites,Owner Observation
+"Guinea pig is scratching itself raw.",Parasites,Owner Observation
+"Ferret has pale gums, possibly flea-induced anemia.",Parasites,Owner Observation
+"Advise monthly heartworm prevention year-round.",Parasites,Clinical Notes
+"Baermann technique used to recover lungworm larvae from feces.",Parasites,Clinical Notes
+"Treat generalized demodicosis with an isoxazoline or other vet-directed protocol.",Parasites,Clinical Notes
+"Rabbit has a broken leg after an accident.",Mobility Problems,Owner Observation
+"My dog has hip dysplasia.",Mobility Problems,Owner Observation
+"Assess deep pain sensation in paralyzed limbs.",Mobility Problems,Clinical Notes
+"Implement regular turning schedule and padded bedding to prevent pressure sores in recumbent animals.",Mobility Problems,Clinical Notes
+"Measure thigh circumference bilaterally to quantify muscle atrophy.",Mobility Problems,Clinical Notes
+"Re-evaluate efficacy and adjust pain medications at each follow-up.",Mobility Problems,Clinical Notes

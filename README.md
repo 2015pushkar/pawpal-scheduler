@@ -1,171 +1,164 @@
-# 🐾 PawPal+
+# PawPal Care Coach
 
-**PawPal+** is a Streamlit app that helps a busy pet owner stay consistent with daily pet care. It takes your pets, your tasks, and your available time — and builds a smart daily schedule that respects priority, detects conflicts, and handles recurring activities automatically.
+**PawPal Care Coach** is a grounded pet-care assistant that connects two workflows owners actually have:
 
----
+- planning recurring daily care across multiple pets
+- responding safely when a pet shows symptoms or a new care concern
 
-## 📸 Demo
+Instead of letting a generative model make the whole decision, this project keeps the final action plan deterministic. The AI layer interprets symptom text, retrieves relevant local care guidance, and suggests follow-up tasks. The scheduler decides what fits into the day.
 
-<a href="Screenshot.png" target="_blank"><img src='Screenshot.png' alt='PawPal+ screenshot' style='max-width: 100%;'></a>
+## Problem
 
----
+Pet owners do not just need reminders. They need a way to turn messy real-world questions like `My cat vomited twice today and is hiding` into practical next steps without losing track of routine feeding, exercise, medication, and follow-up work.
 
-## Features
+Many tools separate those experiences:
 
-### Core scheduling
-| Feature | Description |
-|---|---|
-| **Owner profile** | Set your name and how many minutes you have available today. The scheduler never exceeds this budget. |
-| **Multiple pets** | Add as many pets as you have. Tasks are stored per-pet and aggregated for scheduling. |
-| **Task management** | Create tasks with a name, duration, priority, category, frequency, and optional start time. Validation prevents zero-duration or invalid-priority tasks from entering the system. |
-| **Greedy priority scheduler** | Generates a daily plan by sorting tasks high → medium → low and fitting them into your time budget. Uses an integer sort key (not string comparison) to guarantee correct ordering. |
-| **Plan explanation** | Every schedule includes a plain-English explanation of why each task was included or skipped. |
+- reminder apps manage routine tasks
+- AI chat tools discuss symptoms
 
-### Smarter scheduling
-| Feature | Method | Description |
-|---|---|---|
-| **Sort by time** | `Scheduler.sort_by_time(tasks)` | Orders tasks chronologically by `time_of_day` (`HH:MM`). Uses a lambda key — zero-padded strings sort lexicographically = chronologically. Untimed tasks sort to the end via a `"99:99"` sentinel. |
-| **Filter by pet** | `Scheduler.filter_by_pet(tasks, name)` | Returns only tasks belonging to the named pet, matched by object identity to avoid false name collisions. |
-| **Filter by status** | `Scheduler.filter_by_status(tasks, completed)` | Returns tasks matching a completion state (done / not done). |
-| **Recurring tasks** | `Scheduler.mark_task_complete(task, pet)` | Marks a task complete and automatically queues the next occurrence. `daily` → due tomorrow (+1 day via `timedelta`). `weekly` → due in 7 days. `as-needed` → no follow-up created. |
-| **Conflict detection** | `Scheduler.detect_conflicts(schedule)` | Detects tasks assigned the exact same `time_of_day` using an O(n) dict lookup (vs O(n²) nested loop). Returns warning strings — never crashes. Shown prominently in the UI before the task list. |
+The gap is execution. Guidance is useful only if it becomes a concrete plan.
 
-### Streamlit UI highlights
-- **Time budget progress bar** — visual fill showing minutes used vs. available
-- **Conflict warnings** — `st.warning` callouts with actionable guidance, shown before the task table
-- **Sorted task table** — `st.dataframe` with time, priority badge, frequency label, and completion status
-- **Mark complete buttons** — one click per task; recurring tasks show the next due date on confirmation
-- **Skipped tasks** — displayed with `st.error` and the reason they were dropped
+## Concept
 
----
+PawPal+ combines a grounded care helper with a deterministic scheduler.
 
-## Architecture
+The care helper:
 
-```mermaid
-classDiagram
-    class Owner {
-        - name: str
-        - available_minutes: int
-        - pets: List~Pet~
-        + get_all_tasks() List~Task~
-    }
-    
-    class Pet {
-        - name: str
-        - species: str
-        - age: int
-        - tasks: List~Task~
-        + get_tasks() List~Task~
-        + add_task(task: Task)
-    }
-    
-    class Task {
-        - name: str
-        - duration_minutes: int
-        - priority: str
-        - frequency: str
-        - time_of_day: str
-        - completed: bool
-        - pet_owner: Pet
-        + mark_complete()
-    }
-    
-    class Schedule {
-        - scheduled_tasks: List~Task~
-        - skipped_tasks: List~Task~
-        - explanations: Dict
-    }
-    
-    class Scheduler {
-        + generate_schedule(owner: Owner) Schedule
-        + sort_by_priority(tasks: List~Task~) List~Task~
-        + sort_by_time(tasks: List~Task~) List~Task~
-        + filter_by_pet(tasks: List~Task~, name: str) List~Task~
-        + detect_conflicts(schedule: Schedule) List~str~
-        + mark_task_complete(task: Task, pet: Pet)
-    }
-    
-    Owner "1" --> "*" Pet
-    Pet "1" --> "*" Task
-    Scheduler --> Owner
-    Scheduler --> Schedule
+- classifies a symptom description into a small set of known categories
+- retrieves relevant local care guidance with citations
+- surfaces warning signs and escalation language
+- suggests follow-up actions such as `Call veterinary clinic` or `Schedule ear exam with vet`
+
+The scheduler then treats those follow-up actions as normal tasks and merges them with the owner's existing pet-care workload.
+
+## Approach
+
+- **Classification:** nearest-neighbor text similarity over a local symptom dataset in [data/pet_health_symptoms_dataset.csv](data/pet_health_symptoms_dataset.csv)
+- **Retrieval:** local knowledge-base lookup from [knowledge_base/pet_care_docs.json](knowledge_base/pet_care_docs.json)
+- **Response generation:** template-based summaries, care steps, warnings, citations, and task suggestions
+- **Scheduling:** deterministic greedy prioritization over one shared `Task` model
+- **Guardrails:** non-diagnosis framing, urgent escalation, source display, and limited-species scope warnings
+
+## Architecture At A Glance
+
+```text
+manual pet tasks ------------------------------+
+                                               |
+symptom text -> classify -> retrieve guidance -> grounded advice -> suggested tasks -> Task
+                                               |                                        |
+                                               +----------------------------------------+
+                                                                                        |
+owner + pets + tasks -------------------------------------------------> Scheduler -> daily plan
 ```
 
-**Retrieval flow:**
-```
-Scheduler.generate_schedule()
-  → owner.get_all_tasks()
-      → for pet in owner.pets: pet.get_tasks()
-          → flat list → sort by priority → greedy fit
-```
+For the detailed architecture diagrams and design framing, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
-**File organization:**
-```
-pawpal_system.py          ← logic layer (no Streamlit dependency)
-app.py                    ← Streamlit UI; imports from pawpal_system
-main.py                   ← terminal demo / manual test runner
-tests/test_pawpal.py      ← 24 pytest tests; zero Streamlit dependency
-```
+## What It Does
 
----
+- Creates a daily care schedule across multiple pets with priorities, recurring tasks, skipped-task reporting, and explanations
+- Accepts free-text symptom or care questions
+- Maps symptom text into one of five supported categories:
+  - `Digestive Issues`
+  - `Ear Infections`
+  - `Skin Irritations`
+  - `Parasites`
+  - `Mobility Problems`
+- Retrieves local guidance with source links, warning signs, and safe next steps
+- Converts grounded guidance into follow-up tasks that can be added directly into the scheduler
+
+## Why This Design Is Credible
+
+- The AI layer is bounded to interpretation and guidance, not final decision-making
+- All care guidance is grounded in local documents with explicit source URLs
+- Manual tasks and AI-suggested tasks use the same domain model, so the workflow is coherent
+- The scheduler is simple, transparent, and easy to test
+- The repo includes both automated tests and a small evaluation harness
+
+## Main Modules
+
+- [pawpal_system.py](pawpal_system.py) - core task, pet, owner, schedule, and scheduler logic
+- [pawpal_ai.py](pawpal_ai.py) - symptom classification, retrieval, guardrails, and suggested-task generation
+- [app.py](app.py) - Streamlit UI
+- [main.py](main.py) - terminal demo
+- [evaluate_care_helper.py](evaluate_care_helper.py) - fixed-case evaluation harness
 
 ## Setup
 
 ```bash
 # 1. Create and activate a virtual environment
 py -m venv .venv
-.venv\Scripts\activate        # Windows
-# source .venv/bin/activate   # macOS / Linux
+.venv\Scripts\activate
 
 # 2. Install dependencies
 pip install -r requirements.txt
 
-# 3. Run the app
+# 3. Run the Streamlit app
 streamlit run app.py
 
 # 4. Run the terminal demo
 python main.py
 
-# 5. Run the test suite
-pytest tests/ -v
+# 5. Run the evaluation harness
+python evaluate_care_helper.py
+
+# 6. Run the tests
+pytest tests -v
 ```
 
----
+## Example Interactions
 
-## Tests
+Example 1:
 
-24 tests across 6 classes — all pass in under 0.05 seconds.
+- Input: `My cat keeps vomiting and had diarrhea after breakfast.`
+- Category: `Digestive Issues`
+- Output: hydration monitoring steps, warning signs, source links, and suggested tasks like `Monitor food and water intake`
 
-| Class | Tests | Covers |
-|---|---|---|
-| `TestTaskCompletion` | 2 | `mark_complete()` happy path + idempotency |
-| `TestTaskAddition` | 4 | Count, bulk add, zero duration, bad priority |
-| `TestSortByTime` | 4 | Chronological order, untimed to end, empty list |
-| `TestRecurrence` | 5 | Daily (+1d), weekly (+7d), as-needed (None), flag set |
-| `TestConflictDetection` | 5 | Duplicate slot, distinct slots, cross-pet, untimed ignored |
-| `TestScheduleGeneration` | 4 | Budget cap, empty pet, no pets, priority ordering |
+Example 2:
 
----
+- Input: `My dog's ear smells bad and he keeps scratching it.`
+- Category: `Ear Infections`
+- Output: ear-check guidance, vet follow-up advice, warning signs, and a suggested task like `Schedule ear exam with vet`
 
-## Design notes
+Example 3:
 
-- **Why `Scheduler` only takes `Owner`**: All pet and task data is accessed through `owner.get_all_tasks()`. Adding a new pet never requires changing the Scheduler.
-- **Why `get_total_duration()` is computed, not stored**: A stored counter can drift if tasks are added directly to the list. `sum()` is always accurate.
-- **Why conflict detection uses a dict (not nested loops)**: O(n) vs O(n²). For a typical pet owner with 5–15 tasks per day, the difference is negligible, but the dict version is also shorter and easier to read.
-- **Tradeoff — exact time match vs. duration overlap**: Current conflict detection only flags tasks at the exact same `HH:MM`. A 30-minute task at 08:00 and a task at 08:15 would not be flagged. See `reflection.md` section 2b for the full discussion.
+- Input: `My dog has sudden severe abdominal distension and keeps vomiting.`
+- Category: `Digestive Issues`
+- Output: urgent escalation message, source-backed advice, and a high-priority task such as `Call veterinary clinic`
 
----
+## Testing
 
-## Project structure
+The project has **30 automated tests** across the scheduler logic and the care-helper layer.
 
+Covered scenarios include:
+
+- schedule generation, recurrence, and conflict detection
+- symptom classification across digestive, parasite, ear, and mobility language
+- knowledge-base retrieval with source links
+- urgent-case escalation
+- converting suggested care tasks into normal PawPal schedule tasks
+- scope warnings for unsupported species
+
+Run all tests with:
+
+```bash
+.venv\Scripts\python -m pytest tests -q
 ```
-├── app.py                  Streamlit UI
-├── pawpal_system.py        Logic layer
-├── main.py                 Terminal demo
-├── requirements.txt        Dependencies
-├── reflection.md           Design journal and AI collaboration notes
-├── tests/
-│   ├── __init__.py
-│   └── test_pawpal.py      pytest test suite (24 tests)
-└── README.md               This file
+
+## Project Structure
+
+```text
+app.py
+ARCHITECTURE.md
+data/
+  pet_health_symptoms_dataset.csv
+evaluate_care_helper.py
+knowledge_base/
+  pet_care_docs.json
+main.py
+pawpal_ai.py
+pawpal_system.py
+requirements.txt
+tests/
+  test_pawpal.py
+  test_pawpal_ai.py
 ```

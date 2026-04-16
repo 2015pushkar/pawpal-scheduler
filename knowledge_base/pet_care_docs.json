@@ -1,0 +1,234 @@
+[
+  {
+    "doc_id": "digestive-care",
+    "title": "Digestive upset support for dogs and cats",
+    "conditions": ["Digestive Issues"],
+    "species": ["dog", "cat"],
+    "topics": ["vomiting", "diarrhea", "hydration", "appetite", "stool"],
+    "source_name": "ASPCA General Pet Care",
+    "source_url": "https://www.aspca.org/pet-care/general-pet-care",
+    "summary": "Mild stomach upset should be watched closely, with attention to hydration, appetite, stool quality, and changes in energy level.",
+    "care_steps": [
+      "Watch water intake and note whether vomiting or diarrhea keeps happening.",
+      "Offer a quiet rest period and avoid introducing new treats or foods while symptoms are active.",
+      "Write down when the symptoms started and any recent food, medication, or routine changes.",
+      "Call your veterinarian if the digestive signs continue or your pet becomes weak or uncomfortable."
+    ],
+    "warning_signs": [
+      "repeated vomiting",
+      "bloody diarrhea",
+      "severe abdominal swelling",
+      "not drinking water",
+      "marked lethargy"
+    ],
+    "suggested_tasks": [
+      {
+        "title": "Monitor food and water intake",
+        "duration_minutes": 10,
+        "priority": "high",
+        "frequency": "daily",
+        "category": "medical",
+        "rationale": "Digestive issues need close hydration and appetite tracking."
+      },
+      {
+        "title": "Log vomiting or stool changes",
+        "duration_minutes": 10,
+        "priority": "high",
+        "frequency": "as-needed",
+        "category": "medical",
+        "rationale": "A symptom log helps the vet understand pattern and severity."
+      }
+    ]
+  },
+  {
+    "doc_id": "ear-care",
+    "title": "Ear discomfort and infection warning signs",
+    "conditions": ["Ear Infections"],
+    "species": ["dog", "cat"],
+    "topics": ["ear", "odor", "discharge", "scratching", "hearing"],
+    "source_name": "AKC Health Resources",
+    "source_url": "https://www.akc.org/expert-advice/health/",
+    "summary": "Ear problems often show up as scratching, odor, discharge, pain, or head shaking, and many cases need veterinary treatment rather than home experimentation.",
+    "care_steps": [
+      "Watch for discharge, odor, swelling, repeated scratching, or head shaking.",
+      "Do not use new ear cleaners or medications unless they were already approved by your veterinarian.",
+      "Prevent additional scratching or rubbing that could worsen the irritation.",
+      "Schedule a veterinary exam if pain, odor, or swelling continues."
+    ],
+    "warning_signs": [
+      "ear canal swollen shut",
+      "bleeding from the ear",
+      "loss of balance",
+      "sudden hearing change"
+    ],
+    "suggested_tasks": [
+      {
+        "title": "Check ears for odor or discharge",
+        "duration_minutes": 10,
+        "priority": "medium",
+        "frequency": "daily",
+        "category": "medical",
+        "rationale": "Consistent checks help you notice worsening inflammation quickly."
+      },
+      {
+        "title": "Schedule ear exam with vet",
+        "duration_minutes": 15,
+        "priority": "high",
+        "frequency": "as-needed",
+        "category": "medical",
+        "rationale": "Persistent ear pain usually needs vet-directed treatment."
+      }
+    ]
+  },
+  {
+    "doc_id": "skin-care",
+    "title": "Skin irritation and coat care basics",
+    "conditions": ["Skin Irritations"],
+    "species": ["dog", "cat"],
+    "topics": ["itching", "rash", "redness", "skin folds", "coat"],
+    "source_name": "ASPCA Dog Care",
+    "source_url": "https://www.aspca.org/pet-care/dog-care",
+    "summary": "Skin irritation can come from moisture, allergies, infection, or parasites, so the safest first step is careful monitoring plus a clean, low-irritation environment.",
+    "care_steps": [
+      "Check the skin for redness, odor, open sores, crusting, or moist irritated spots.",
+      "Keep bedding and high-contact areas clean and dry.",
+      "Avoid applying new topical products unless they are already vet-approved for your pet.",
+      "Book a veterinary visit if the rash spreads, smells bad, or your pet is damaging the skin by scratching."
+    ],
+    "warning_signs": [
+      "open wounds",
+      "rapidly spreading rash",
+      "bad odor from the skin",
+      "constant scratching"
+    ],
+    "suggested_tasks": [
+      {
+        "title": "Inspect irritated skin areas",
+        "duration_minutes": 10,
+        "priority": "medium",
+        "frequency": "daily",
+        "category": "grooming",
+        "rationale": "Daily checks show whether redness or swelling is improving."
+      },
+      {
+        "title": "Wash pet bedding",
+        "duration_minutes": 20,
+        "priority": "medium",
+        "frequency": "weekly",
+        "category": "cleaning",
+        "rationale": "Clean bedding reduces irritants and helps skin recovery."
+      }
+    ]
+  },
+  {
+    "doc_id": "parasite-care",
+    "title": "Parasite prevention and follow-up",
+    "conditions": ["Parasites"],
+    "species": ["dog", "cat"],
+    "topics": ["fleas", "ticks", "worms", "prevention", "stool"],
+    "source_name": "AAHA Pet Owner Resources",
+    "source_url": "https://www.aaha.org/pet-owner-resources/",
+    "summary": "External and internal parasites can affect skin, stool, appetite, and energy, and prevention only works well when the full household plan is followed consistently.",
+    "care_steps": [
+      "Check the coat, ears, bedding, and stool for fleas, flea dirt, ticks, or visible worms.",
+      "Use only vet-approved parasite prevention products labeled for your pet's species and size.",
+      "Wash bedding and clean common resting areas if parasites are suspected.",
+      "Contact your veterinarian if your pet looks weak, pale, or keeps losing weight."
+    ],
+    "warning_signs": [
+      "pale gums",
+      "worms plus weight loss",
+      "heavy flea infestation",
+      "weakness"
+    ],
+    "suggested_tasks": [
+      {
+        "title": "Inspect stool and coat for parasites",
+        "duration_minutes": 10,
+        "priority": "high",
+        "frequency": "as-needed",
+        "category": "medical",
+        "rationale": "Direct observation helps confirm what the vet needs to know."
+      },
+      {
+        "title": "Wash bedding and vacuum pet areas",
+        "duration_minutes": 20,
+        "priority": "medium",
+        "frequency": "weekly",
+        "category": "cleaning",
+        "rationale": "Environmental cleanup supports parasite control."
+      }
+    ]
+  },
+  {
+    "doc_id": "mobility-care",
+    "title": "Mobility support and pain monitoring",
+    "conditions": ["Mobility Problems"],
+    "species": ["dog", "cat"],
+    "topics": ["limping", "pain", "hip", "broken leg", "mobility"],
+    "source_name": "AAHA Pet Owner Resources",
+    "source_url": "https://www.aaha.org/pet-owner-resources/",
+    "summary": "Mobility changes often need reduced activity, careful pain monitoring, and prompt veterinary assessment when movement suddenly worsens.",
+    "care_steps": [
+      "Limit jumping, rough play, stairs, and slippery surfaces until the issue is understood.",
+      "Provide a padded resting area that is easy to reach.",
+      "Track when the limping or weakness is worst and whether it is getting better or worse.",
+      "Contact your veterinarian promptly if your pet cannot bear weight or seems very painful."
+    ],
+    "warning_signs": [
+      "cannot bear weight",
+      "sudden paralysis",
+      "broken limb",
+      "severe pain"
+    ],
+    "suggested_tasks": [
+      {
+        "title": "Set up padded rest area",
+        "duration_minutes": 15,
+        "priority": "high",
+        "frequency": "as-needed",
+        "category": "comfort",
+        "rationale": "Mobility issues improve when movement demands are reduced."
+      },
+      {
+        "title": "Track limping or pain changes",
+        "duration_minutes": 10,
+        "priority": "high",
+        "frequency": "daily",
+        "category": "medical",
+        "rationale": "Trend notes help the vet judge severity and progression."
+      }
+    ]
+  },
+  {
+    "doc_id": "urgent-general",
+    "title": "General urgent-care warning signs",
+    "conditions": ["all"],
+    "species": ["dog", "cat"],
+    "topics": ["urgent", "emergency", "vet", "warning", "sudden"],
+    "source_name": "AVMA Pet Owner Resources",
+    "source_url": "https://www.avma.org/resources-tools/pet-owners/petcare",
+    "summary": "Serious changes in breathing, pain, bleeding, swelling, or responsiveness should be treated as urgent and should not wait for routine monitoring alone.",
+    "care_steps": [
+      "If symptoms are severe or rapidly worsening, call your veterinary clinic immediately.",
+      "Bring a short symptom timeline, medication list, and food history if you need same-day care.",
+      "Avoid giving human medications unless your veterinarian has explicitly prescribed them for this situation."
+    ],
+    "warning_signs": [
+      "collapse",
+      "trouble breathing",
+      "uncontrolled bleeding",
+      "sudden severe swelling"
+    ],
+    "suggested_tasks": [
+      {
+        "title": "Prepare symptom summary for vet",
+        "duration_minutes": 10,
+        "priority": "high",
+        "frequency": "as-needed",
+        "category": "medical",
+        "rationale": "A short symptom summary speeds up urgent care communication."
+      }
+    ]
+  }
+]
